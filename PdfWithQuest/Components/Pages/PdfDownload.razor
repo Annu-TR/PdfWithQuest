@@ -1,0 +1,38 @@
+﻿@page "/pdf-download"
+@rendermode InteractiveServer
+@inject PdfService PdfService
+@inject IJSRuntime JSRuntime
+
+<h3>PDF Download Test</h3>
+
+<p>Debug: @debugMessage</p>
+
+<button class="btn btn-primary" @onclick="DownloadPdf">
+    Download PDF
+</button>
+
+@code {
+    private string debugMessage = "Ready";
+
+    private async Task DownloadPdf()
+    {
+        try
+        {
+            debugMessage = "Button clicked - starting PDF generation...";
+            StateHasChanged();
+
+            var pdfBytes = PdfService.GenerateSamplePdf();
+            debugMessage = $"PDF generated - {pdfBytes.Length} bytes";
+            StateHasChanged();
+
+            var base64 = Convert.ToBase64String(pdfBytes);
+            await JSRuntime.InvokeVoidAsync("downloadPdf", base64, "test.pdf");
+
+            debugMessage = "Download complete!";
+        }
+        catch (Exception ex)
+        {
+            debugMessage = $"Error: {ex.Message}";
+        }
+    }
+}
